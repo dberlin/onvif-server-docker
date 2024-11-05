@@ -25,36 +25,36 @@ ENV \
 # hadolint ignore=DL3003,DL4006
 RUN mkdir --parent ${ONVIF_SERVER_HOME} ${ONVIF_SERVER_CONFIG} ${RTSP_SERVER_HOME} && \
 	wget --quiet \
-		--output-document=/happytime-onvif-server.tar.gz \
-		https://www.happytimesoft.com/downloads/happytime-onvif-server.tar.gz && \
+	--output-document=/happytime-onvif-server.tar.gz \
+	https://www.happytimesoft.com/downloads/happytime-onvif-server.tar.gz && \
 	sha256sum /happytime-onvif-server.tar.gz && \
 	tar --directory=/tmp \
-		--extract \
-		--file=/happytime-onvif-server.tar.gz \
-		--gzip \
-		--strip-components=1 && \
+	--extract \
+	--file=/happytime-onvif-server.tar.gz \
+	--gzip \
+	--strip-components=1 && \
 	rm --force /happytime-onvif-server.tar.gz && \
-	mv /tmp/config.xml \
-		/tmp/html \
-		/tmp/*.so.* \
-		/tmp/mklinks.sh \
-		/tmp/onvifserver \
-		/tmp/snapshot.jpg \
-		${ONVIF_SERVER_HOME} && \
+	mv /tmp/onvif.cfg \
+	/tmp/html \
+	/tmp/*.so.* \
+	/tmp/mklinks.sh \
+	/tmp/onvifserver \
+	/tmp/snapshot.jpg \
+	${ONVIF_SERVER_HOME} && \
 	sed --expression='/<http_enable>/s/1/1/g' \
-		--expression='/<https_enable>/s/0/1/g' \
-		--expression='/<need_auth>/s/0/1/g' \
-		--expression='/<cert_file>/c<cert_file>/etc/ssl/certs/onvif-server.crt</cert_file>' \
-		--expression='/<key_file>/c<key_file>/etc/ssl/private/onvif-server.key</key_file>' \
-		--in-place=.dist ${ONVIF_SERVER_HOME}/config.xml && \
-	mv /tmp/happytime-rtsp-server/config.xml /tmp/happytime-rtsp-server/*.so.* \
-		/tmp/happytime-rtsp-server/mklinks.sh \
-		/tmp/happytime-rtsp-server/rtspserver \
-		/tmp/happytime-rtsp-server/test.mp4 \
-		${RTSP_SERVER_HOME} && \
+	--expression='/<https_enable>/s/0/1/g' \
+	--expression='/<need_auth>/s/0/1/g' \
+	--expression='/<cert_file>/c<cert_file>/etc/ssl/certs/onvif-server.crt</cert_file>' \
+	--expression='/<key_file>/c<key_file>/etc/ssl/private/onvif-server.key</key_file>' \
+	--in-place=.dist ${ONVIF_SERVER_HOME}/onvif.cfg && \
+	mv /tmp/happytime-rtsp-server/rtspserver.cfg /tmp/happytime-rtsp-server/*.so.* \
+	/tmp/happytime-rtsp-server/mklinks.sh \
+	/tmp/happytime-rtsp-server/rtspserver \
+	/tmp/happytime-rtsp-server/test.mp4 \
+	${RTSP_SERVER_HOME} && \
 	sed --expression='/<cert_file>/c<cert_file>/etc/ssl/certificates/rtsp-server.crt</cert_file>' \
-		--expression='/<key_file>/c<key_file>/etc/ssl/private/rtsp-server.key</key_file>' \
-		--in-place=.dist ${RTSP_SERVER_HOME}/config.xml && \
+	--expression='/<key_file>/c<key_file>/etc/ssl/private/rtsp-server.key</key_file>' \
+	--in-place=.dist ${RTSP_SERVER_HOME}/rtspserver.cfg && \
 	cd ${ONVIF_SERVER_HOME} && \
 	${ONVIF_SERVER_HOME}/mklinks.sh && \
 	cd ${RTSP_SERVER_HOME} && \
@@ -67,7 +67,7 @@ COPY stunnel.conf /etc/stunnel/
 # Configure: supervisor
 COPY supervisord.onvif-server.conf /etc/supervisor/conf.d/onvif-server.conf
 COPY supervisord.rtsp-server.conf /etc/supervisor/conf.d/rtsp-server.conf
-COPY supervisord.stunnel.conf /etc/supervisor/conf.d/stunnel.conf
+#COPY supervisord.stunnel.conf /etc/supervisor/conf.d/stunnel.conf
 
 # Configure: entrypoint
 COPY entrypoint.onvif-server /etc/entrypoint.d/onvif-server
@@ -76,7 +76,7 @@ COPY entrypoint.rtsp-server /etc/entrypoint.d/rtsp-server
 # Configure: healthcheck
 COPY healthcheck.onvif-server /etc/healthcheck.d/onvif-server
 COPY healthcheck.rtsp-server /etc/healthcheck.d/rtsp-server
-COPY healthcheck.stunnel /etc/healthcheck.d/stunnel
+#COPY healthcheck.stunnel /etc/healthcheck.d/stunnel
 
 EXPOSE 8443/tcp
 
